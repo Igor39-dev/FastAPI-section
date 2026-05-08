@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Query
 
 from app.core.dependencies import get_trading_repository
 from app.repositories.trading import TradingRepository
-from app.schemas.trading import TradingDateResponse, TradingDynamicsQuery, TradingResultResponse
+from app.schemas.trading import TradingDateResponse, TradingDynamicsQuery, TradingResultResponse, TradingResultsQuery
 
 router = APIRouter(prefix="/api/v1/trading", tags=["trading"])
 
@@ -33,5 +33,21 @@ async def get_trading_dynamics(
         oil_id=params.oil_id,
         delivery_type_id=params.delivery_type_id,
         delivery_basis_id=params.delivery_basis_id,
+    )
+    return [TradingResultResponse.model_validate(row) for row in rows]
+
+
+@router.get("/results/", response_model=list[TradingResultResponse])
+async def get_trading_results(
+    repository: Annotated[TradingRepository, Depends(get_trading_repository)],
+    params: Annotated[TradingResultsQuery, Depends()],
+) -> list[TradingResultResponse]:
+    """Возвращает последние торговые результаты с фильтрами."""
+
+    rows = await repository.get_trading_results(
+        oil_id=params.oil_id,
+        delivery_type_id=params.delivery_type_id,
+        delivery_basis_id=params.delivery_basis_id,
+        limit=params.limit,
     )
     return [TradingResultResponse.model_validate(row) for row in rows]
