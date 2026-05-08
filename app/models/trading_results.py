@@ -1,4 +1,6 @@
-from sqlalchemy import Index
+from datetime import date as dt
+
+from sqlalchemy import Date, Index
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
@@ -22,7 +24,7 @@ class SpimexTradingResult(Base):
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    date: Mapped[date] = mapped_column(nullable=False, index=True)
+    date: Mapped[dt] = mapped_column(Date, nullable=False, index=True)
     oil_id: Mapped[int] = mapped_column(nullable=False, index=True)
     delivery_type_id: Mapped[int] = mapped_column(nullable=False, index=True)
     delivery_basis_id: Mapped[int] = mapped_column(nullable=False, index=True)

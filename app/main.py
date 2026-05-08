@@ -3,6 +3,7 @@ from collections.abc import AsyncIterator
 import uvicorn
 from fastapi import FastAPI
 
+from app.api.v1.routers.trading_results import router as trading_router
 from app.core.database import check_db_connection, engine
 
 
@@ -20,6 +21,8 @@ app = FastAPI(
     description="API для работы с данными из таблицы spimex_trading_results",
     lifespan=lifespan,
 )
+
+app.include_router(trading_router)
 
 
 @app.get("/health", tags=["health"])
