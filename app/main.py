@@ -5,7 +5,11 @@ from collections.abc import AsyncIterator
 import redis.asyncio as redis_async
 import uvicorn
 from fastapi import FastAPI
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
+from pydantic import ValidationError
 from redis.exceptions import RedisError
+from starlette.requests import Request
 
 from app.api.v1.routers.trading_results import router as trading_router
 from app.cache.scheduler import cache_flush_scheduler
@@ -50,6 +54,16 @@ app = FastAPI(
 )
 
 app.include_router(trading_router)
+
+
+@app.exception_handler(ValidationError)
+async def pydantic_validation_handler(_request: Request, exc: ValidationError) -> JSONResponse:
+    """Depends(Pydantic-модель) может поднимать ValidationError вне стандартного контура 422."""
+
+    return JSONResponse(
+        status_code=422,
+        content={"detail": jsonable_encoder(exc.errors())},
+    )
 
 
 @app.get("/health", tags=["health"])
