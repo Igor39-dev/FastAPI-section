@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     POSTGRES_POOL_RECYCLE: int = Field(default=3600, ge=1)
 
     REDIS_URL: str = Field(default="redis://localhost:6379/0")
+    CACHE_TIMEZONE: str = Field(default="Europe/Moscow")
 
     @property
     def DB_URL(self) -> str:

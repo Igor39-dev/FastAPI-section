@@ -1,18 +1,44 @@
+import asyncio
 from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
+
+import redis.asyncio as redis_async
 import uvicorn
 from fastapi import FastAPI
 
 from app.api.v1.routers.trading_results import router as trading_router
+from app.cache.scheduler import cache_flush_scheduler
+from app.cache.service import TradingCache
+from app.core.config import settings
 from app.core.database import check_db_connection, engine
 
 
 @asynccontextmanager
-async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Управляет жизненным циклом приложения."""
 
-    yield
-    await engine.dispose()
+    redis_client = redis_async.from_url(settings.REDIS_URL, decode_responses=True)
+    app.state.redis = redis_client
+    app.state.trading_cache = TradingCache(
+        redis_client,
+        timezone=settings.CACHE_TIMEZONE,
+    )
+
+    stop_flush = asyncio.Event()
+    flush_task = asyncio.create_task(
+        cache_flush_scheduler(redis_client, settings.CACHE_TIMEZONE, stop_flush)
+    )
+    try:
+        yield
+    finally:
+        stop_flush.set()
+        flush_task.cancel()
+        try:
+            await flush_task
+        except asyncio.CancelledError:
+            pass
+        await redis_client.aclose()
+        await engine.dispose()
 
 
 app = FastAPI(
