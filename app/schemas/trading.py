@@ -15,9 +15,9 @@ class TradingResultResponse(BaseModel):
 
     id: int
     date: date
-    oil_id: int
-    delivery_type_id: int
-    delivery_basis_id: int
+    oil_id: str
+    delivery_type_id: str
+    delivery_basis_id: str
     volume: float
     total: float
     count: int
@@ -26,9 +26,9 @@ class TradingResultResponse(BaseModel):
 class TradingDynamicsQuery(BaseModel):
     start_date: date
     end_date: date
-    oil_id: int | None = None
-    delivery_type_id: int | None = None
-    delivery_basis_id: int | None = None
+    oil_id: str | None = None
+    delivery_type_id: str | None = None
+    delivery_basis_id: str | None = None
 
     @field_validator("end_date")
     @classmethod
@@ -40,7 +40,7 @@ class TradingDynamicsQuery(BaseModel):
 
 
 class TradingResultsQuery(BaseModel):
-    oil_id: int | None = None
-    delivery_type_id: int | None = None
-    delivery_basis_id: int | None = None
+    oil_id: str | None = None
+    delivery_type_id: str | None = None
+    delivery_basis_id: str | None = None
     limit: int = Field(default=100, ge=1, le=1000)

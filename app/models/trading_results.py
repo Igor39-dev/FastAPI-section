@@ -25,9 +25,9 @@ class SpimexTradingResult(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     date: Mapped[dt] = mapped_column(Date, nullable=False, index=True)
-    oil_id: Mapped[int] = mapped_column(nullable=False, index=True)
-    delivery_type_id: Mapped[int] = mapped_column(nullable=False, index=True)
-    delivery_basis_id: Mapped[int] = mapped_column(nullable=False, index=True)
+    oil_id: Mapped[str] = mapped_column(nullable=False, index=True)
+    delivery_type_id: Mapped[str] = mapped_column(nullable=False, index=True)
+    delivery_basis_id: Mapped[str] = mapped_column(nullable=False, index=True)
     volume: Mapped[float] = mapped_column(nullable=False)
     total: Mapped[float] = mapped_column(nullable=False)
     count: Mapped[int] = mapped_column(nullable=False)

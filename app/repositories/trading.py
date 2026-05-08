@@ -25,9 +25,9 @@ class TradingRepository:
         self,
         start_date: date,
         end_date: date,
-        oil_id: int | None = None,
-        delivery_type_id: int | None = None,
-        delivery_basis_id: int | None = None,
+        oil_id: str | None = None,
+        delivery_type_id: str | None = None,
+        delivery_basis_id: str | None = None,
     ) -> list[SpimexTradingResult]:
         stmt: Select[tuple[SpimexTradingResult]] = select(SpimexTradingResult).where(
             SpimexTradingResult.date >= start_date,
@@ -45,9 +45,9 @@ class TradingRepository:
 
     async def get_trading_results(
         self,
-        oil_id: int | None = None,
-        delivery_type_id: int | None = None,
-        delivery_basis_id: int | None = None,
+        oil_id: str | None = None,
+        delivery_type_id: str | None = None,
+        delivery_basis_id: str | None = None,
         limit: int = 100,
     ) -> list[SpimexTradingResult]:
         stmt: Select[tuple[SpimexTradingResult]] = select(SpimexTradingResult)
@@ -66,9 +66,9 @@ class TradingRepository:
     @staticmethod
     def _apply_filters(
         stmt: Select[tuple[SpimexTradingResult]],
-        oil_id: int | None,
-        delivery_type_id: int | None,
-        delivery_basis_id: int | None,
+        oil_id: str | None,
+        delivery_type_id: str | None,
+        delivery_basis_id: str | None,
     ) -> Select[tuple[SpimexTradingResult]]:
         if oil_id is not None:
             stmt = stmt.where(SpimexTradingResult.oil_id == oil_id)
