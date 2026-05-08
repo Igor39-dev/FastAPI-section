@@ -5,6 +5,7 @@ from collections.abc import AsyncIterator
 import redis.asyncio as redis_async
 import uvicorn
 from fastapi import FastAPI
+from redis.exceptions import RedisError
 
 from app.api.v1.routers.trading_results import router as trading_router
 from app.cache.scheduler import cache_flush_scheduler
@@ -52,11 +53,26 @@ app.include_router(trading_router)
 
 
 @app.get("/health", tags=["health"])
-async def health_check() -> dict:
+async def health_check() -> dict[str, object]:
     """Базовый healthcheck для мониторинга сервиса."""
 
     db_ok = await check_db_connection()
-    return {"status": "ok" if db_ok else "degraded"}
+    redis_ok = True
+    try:
+        await app.state.redis.ping()
+    except (RedisError, AttributeError, RuntimeError, OSError):
+        redis_ok = False
+    except Exception:
+        redis_ok = False
+
+    status = "ok" if db_ok and redis_ok else "degraded"
+    return {
+        "status": status,
+        "services": {
+            "database": "ok" if db_ok else "down",
+            "redis": "ok" if redis_ok else "down",
+        },
+    }
 
 
 if __name__ == "__main__":
