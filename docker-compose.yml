@@ -1,0 +1,42 @@
+services:
+  # Опционально: Postgres в Docker. Запуск: docker compose --profile bundled-postgres up --build
+  # В .env при этом укажите DB_HOST=db и согласованные POSTGRES_* / DB_*.
+  db:
+    profiles:
+      - bundled-postgres
+    image: postgres:13.0-alpine
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - postgres_data_fastapi:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # По умолчанию: подключение к PostgreSQL на машине-хосте (см. DB_HOST в .env).
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data_fastapi:
